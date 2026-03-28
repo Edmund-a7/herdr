@@ -249,7 +249,11 @@ fn handle_rename_key(state: &mut AppState, key: KeyEvent) {
 fn handle_resize_key(state: &mut AppState, key: KeyEvent) {
     if key.code == KeyCode::Esc
         || key.code == KeyCode::Enter
-        || key_matches(&key, state.keybinds.resize_mode.0, state.keybinds.resize_mode.1)
+        || key_matches(
+            &key,
+            state.keybinds.resize_mode.0,
+            state.keybinds.resize_mode.1,
+        )
     {
         if state.active.is_some() {
             state.mode = Mode::Terminal;
@@ -599,8 +603,8 @@ impl AppState {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crossterm::event::KeyModifiers;
     use crate::workspace::Workspace;
+    use crossterm::event::KeyModifiers;
 
     fn state_with_workspaces(names: &[&str]) -> AppState {
         let mut state = AppState::test_new();
@@ -619,7 +623,10 @@ mod tests {
         state.keybinds.rename_workspace = (KeyCode::Char('g'), KeyModifiers::empty());
         state.keybinds.rename_workspace_label = "g".into();
 
-        handle_navigate_key(&mut state, KeyEvent::new(KeyCode::Char('g'), KeyModifiers::empty()));
+        handle_navigate_key(
+            &mut state,
+            KeyEvent::new(KeyCode::Char('g'), KeyModifiers::empty()),
+        );
 
         assert_eq!(state.mode, Mode::RenameSession);
         assert_eq!(state.name_input, "test");
@@ -631,7 +638,10 @@ mod tests {
         state.keybinds.new_workspace = (KeyCode::Char('g'), KeyModifiers::empty());
         state.keybinds.new_workspace_label = "g".into();
 
-        handle_navigate_key(&mut state, KeyEvent::new(KeyCode::Char('g'), KeyModifiers::empty()));
+        handle_navigate_key(
+            &mut state,
+            KeyEvent::new(KeyCode::Char('g'), KeyModifiers::empty()),
+        );
 
         assert!(state.request_new_workspace);
         assert_eq!(state.mode, Mode::Terminal);
@@ -644,7 +654,10 @@ mod tests {
         state.keybinds.toggle_sidebar_label = "g".into();
         assert!(!state.sidebar_collapsed);
 
-        handle_navigate_key(&mut state, KeyEvent::new(KeyCode::Char('g'), KeyModifiers::empty()));
+        handle_navigate_key(
+            &mut state,
+            KeyEvent::new(KeyCode::Char('g'), KeyModifiers::empty()),
+        );
 
         assert!(state.sidebar_collapsed);
         assert_eq!(state.mode, Mode::Terminal);
@@ -656,7 +669,10 @@ mod tests {
         state.keybinds.resize_mode = (KeyCode::Char('g'), KeyModifiers::empty());
         state.keybinds.resize_mode_label = "g".into();
 
-        handle_navigate_key(&mut state, KeyEvent::new(KeyCode::Char('g'), KeyModifiers::empty()));
+        handle_navigate_key(
+            &mut state,
+            KeyEvent::new(KeyCode::Char('g'), KeyModifiers::empty()),
+        );
 
         assert_eq!(state.mode, Mode::Resize);
     }
@@ -666,7 +682,10 @@ mod tests {
         let mut state = state_with_workspaces(&["a", "b"]);
         state.selected = 0;
 
-        handle_navigate_key(&mut state, KeyEvent::new(KeyCode::Down, KeyModifiers::empty()));
+        handle_navigate_key(
+            &mut state,
+            KeyEvent::new(KeyCode::Down, KeyModifiers::empty()),
+        );
 
         assert_eq!(state.selected, 1);
         assert_eq!(state.mode, Mode::Navigate);
@@ -679,7 +698,10 @@ mod tests {
         state.keybinds.fullscreen = (KeyCode::Char('g'), KeyModifiers::empty());
         state.keybinds.fullscreen_label = "g".into();
 
-        handle_navigate_key(&mut state, KeyEvent::new(KeyCode::Char('g'), KeyModifiers::empty()));
+        handle_navigate_key(
+            &mut state,
+            KeyEvent::new(KeyCode::Char('g'), KeyModifiers::empty()),
+        );
 
         assert!(state.workspaces[0].zoomed);
         assert_eq!(state.mode, Mode::Terminal);
@@ -692,7 +714,10 @@ mod tests {
         state.keybinds.resize_mode = (KeyCode::Char('g'), KeyModifiers::empty());
         state.keybinds.resize_mode_label = "g".into();
 
-        handle_resize_key(&mut state, KeyEvent::new(KeyCode::Char('g'), KeyModifiers::empty()));
+        handle_resize_key(
+            &mut state,
+            KeyEvent::new(KeyCode::Char('g'), KeyModifiers::empty()),
+        );
 
         assert_eq!(state.mode, Mode::Terminal);
     }

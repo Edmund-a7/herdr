@@ -181,7 +181,10 @@ impl Config {
                 Ok(content) => match toml::from_str::<Config>(&content) {
                     Ok(config) => {
                         let diagnostics = config.collect_diagnostics();
-                        return LoadedConfig { config, diagnostics };
+                        return LoadedConfig {
+                            config,
+                            diagnostics,
+                        };
                     }
                     Err(e) => {
                         warn!(err = %e, "config parse error, using defaults");
@@ -220,7 +223,14 @@ impl Config {
         prefix_diag.into_iter().chain(keybind_diags).collect()
     }
 
-    fn validated_keybinds(&self) -> (Option<String>, (KeyCode, KeyModifiers), Vec<String>, Keybinds) {
+    fn validated_keybinds(
+        &self,
+    ) -> (
+        Option<String>,
+        (KeyCode, KeyModifiers),
+        Vec<String>,
+        Keybinds,
+    ) {
         #[derive(Clone)]
         struct Binding<'a> {
             field: &'a str,
@@ -264,15 +274,69 @@ impl Config {
         }
 
         let mut bindings = vec![
-            binding("keys.new_workspace", &self.keys.new_workspace, "n", (KeyCode::Char('n'), KeyModifiers::empty()), &mut diagnostics),
-            binding("keys.rename_workspace", &self.keys.rename_workspace, "shift+n", (KeyCode::Char('n'), KeyModifiers::SHIFT), &mut diagnostics),
-            binding("keys.close_workspace", &self.keys.close_workspace, "d", (KeyCode::Char('d'), KeyModifiers::empty()), &mut diagnostics),
-            binding("keys.split_vertical", &self.keys.split_vertical, "v", (KeyCode::Char('v'), KeyModifiers::empty()), &mut diagnostics),
-            binding("keys.split_horizontal", &self.keys.split_horizontal, "-", (KeyCode::Char('-'), KeyModifiers::empty()), &mut diagnostics),
-            binding("keys.close_pane", &self.keys.close_pane, "x", (KeyCode::Char('x'), KeyModifiers::empty()), &mut diagnostics),
-            binding("keys.fullscreen", &self.keys.fullscreen, "f", (KeyCode::Char('f'), KeyModifiers::empty()), &mut diagnostics),
-            binding("keys.resize_mode", &self.keys.resize_mode, "r", (KeyCode::Char('r'), KeyModifiers::empty()), &mut diagnostics),
-            binding("keys.toggle_sidebar", &self.keys.toggle_sidebar, "b", (KeyCode::Char('b'), KeyModifiers::empty()), &mut diagnostics),
+            binding(
+                "keys.new_workspace",
+                &self.keys.new_workspace,
+                "n",
+                (KeyCode::Char('n'), KeyModifiers::empty()),
+                &mut diagnostics,
+            ),
+            binding(
+                "keys.rename_workspace",
+                &self.keys.rename_workspace,
+                "shift+n",
+                (KeyCode::Char('n'), KeyModifiers::SHIFT),
+                &mut diagnostics,
+            ),
+            binding(
+                "keys.close_workspace",
+                &self.keys.close_workspace,
+                "d",
+                (KeyCode::Char('d'), KeyModifiers::empty()),
+                &mut diagnostics,
+            ),
+            binding(
+                "keys.split_vertical",
+                &self.keys.split_vertical,
+                "v",
+                (KeyCode::Char('v'), KeyModifiers::empty()),
+                &mut diagnostics,
+            ),
+            binding(
+                "keys.split_horizontal",
+                &self.keys.split_horizontal,
+                "-",
+                (KeyCode::Char('-'), KeyModifiers::empty()),
+                &mut diagnostics,
+            ),
+            binding(
+                "keys.close_pane",
+                &self.keys.close_pane,
+                "x",
+                (KeyCode::Char('x'), KeyModifiers::empty()),
+                &mut diagnostics,
+            ),
+            binding(
+                "keys.fullscreen",
+                &self.keys.fullscreen,
+                "f",
+                (KeyCode::Char('f'), KeyModifiers::empty()),
+                &mut diagnostics,
+            ),
+            binding(
+                "keys.resize_mode",
+                &self.keys.resize_mode,
+                "r",
+                (KeyCode::Char('r'), KeyModifiers::empty()),
+                &mut diagnostics,
+            ),
+            binding(
+                "keys.toggle_sidebar",
+                &self.keys.toggle_sidebar,
+                "b",
+                (KeyCode::Char('b'), KeyModifiers::empty()),
+                &mut diagnostics,
+            ),
         ];
 
         use std::collections::HashMap;
@@ -477,7 +541,6 @@ fn parse_key_combo_with_diagnostic(
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -569,7 +632,10 @@ mod tests {
         let config = Config::default();
         let kb = config.keybinds();
         assert_eq!(kb.new_workspace.0, KeyCode::Char('n'));
-        assert_eq!(kb.rename_workspace, (KeyCode::Char('n'), KeyModifiers::SHIFT));
+        assert_eq!(
+            kb.rename_workspace,
+            (KeyCode::Char('n'), KeyModifiers::SHIFT)
+        );
         assert_eq!(kb.close_workspace.0, KeyCode::Char('d'));
         assert_eq!(kb.split_vertical.0, KeyCode::Char('v'));
         assert_eq!(kb.split_horizontal.0, KeyCode::Char('-'));
@@ -600,9 +666,18 @@ toggle_sidebar = "tab"
         assert_eq!(mods, KeyModifiers::CONTROL);
 
         let kb = config.keybinds();
-        assert_eq!(kb.new_workspace, (KeyCode::Char('c'), KeyModifiers::empty()));
-        assert_eq!(kb.rename_workspace, (KeyCode::Char('r'), KeyModifiers::SHIFT));
-        assert_eq!(kb.close_workspace, (KeyCode::Char('d'), KeyModifiers::CONTROL));
+        assert_eq!(
+            kb.new_workspace,
+            (KeyCode::Char('c'), KeyModifiers::empty())
+        );
+        assert_eq!(
+            kb.rename_workspace,
+            (KeyCode::Char('r'), KeyModifiers::SHIFT)
+        );
+        assert_eq!(
+            kb.close_workspace,
+            (KeyCode::Char('d'), KeyModifiers::CONTROL)
+        );
         assert_eq!(kb.split_vertical.0, KeyCode::Char('s'));
         assert_eq!(
             kb.split_horizontal,
@@ -622,7 +697,10 @@ split_horizontal = "D"
 "#;
         let config: Config = toml::from_str(toml).unwrap();
         let kb = config.keybinds();
-        assert_eq!(kb.split_horizontal, (KeyCode::Char('d'), KeyModifiers::SHIFT));
+        assert_eq!(
+            kb.split_horizontal,
+            (KeyCode::Char('d'), KeyModifiers::SHIFT)
+        );
     }
 
     #[test]
@@ -635,8 +713,13 @@ rename_workspace = "wat"
         let diagnostics = config.collect_diagnostics();
         let kb = config.keybinds();
 
-        assert!(diagnostics.iter().any(|d| d.contains("keys.rename_workspace")));
-        assert_eq!(kb.rename_workspace, (KeyCode::Char('n'), KeyModifiers::SHIFT));
+        assert!(diagnostics
+            .iter()
+            .any(|d| d.contains("keys.rename_workspace")));
+        assert_eq!(
+            kb.rename_workspace,
+            (KeyCode::Char('n'), KeyModifiers::SHIFT)
+        );
         assert_eq!(kb.rename_workspace_label, "shift+n");
     }
 
@@ -651,9 +734,17 @@ rename_workspace = "g"
         let diagnostics = config.collect_diagnostics();
         let kb = config.keybinds();
 
-        assert!(diagnostics.iter().any(|d| d.contains("duplicate keybinding")));
-        assert_eq!(kb.new_workspace, (KeyCode::Char('g'), KeyModifiers::empty()));
-        assert_eq!(kb.rename_workspace, (KeyCode::Char('n'), KeyModifiers::SHIFT));
+        assert!(diagnostics
+            .iter()
+            .any(|d| d.contains("duplicate keybinding")));
+        assert_eq!(
+            kb.new_workspace,
+            (KeyCode::Char('g'), KeyModifiers::empty())
+        );
+        assert_eq!(
+            kb.rename_workspace,
+            (KeyCode::Char('n'), KeyModifiers::SHIFT)
+        );
         assert_eq!(kb.rename_workspace_label, "shift+n");
     }
 

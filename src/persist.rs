@@ -406,7 +406,10 @@ mod tests {
         let restored: SessionSnapshot = serde_json::from_str(&json).unwrap();
 
         assert_eq!(restored.workspaces.len(), 1);
-        assert_eq!(restored.workspaces[0].custom_name.as_deref(), Some("pi-mono"));
+        assert_eq!(
+            restored.workspaces[0].custom_name.as_deref(),
+            Some("pi-mono")
+        );
         assert_eq!(restored.workspaces[0].panes.len(), 2);
         assert_eq!(
             restored.workspaces[0].panes[&0].cwd,

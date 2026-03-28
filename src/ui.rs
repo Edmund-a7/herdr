@@ -140,14 +140,16 @@ fn compute_sidebar_width(app: &AppState) -> u16 {
     let max_line = app
         .workspaces
         .iter()
-        .map(|ws| {
+        .enumerate()
+        .map(|(i, ws)| {
             let name_len = ws.display_name().len();
+            let number_len = (i + 1).to_string().len();
             let pane_count = if ws.layout.pane_count() > 1 {
                 ws.layout.pane_count()
             } else {
                 0
             };
-            let line1 = 4 + name_len + pane_count; // marker + dot + spaces + pane dots
+            let line1 = 5 + name_len + number_len + pane_count; // marker + number + name + spaces + pane dots
             let line2 = ws.agent_summary().map(|s| s.len() + 2).unwrap_or(0);
             line1.max(line2)
         })
@@ -160,7 +162,11 @@ fn compute_sidebar_width(app: &AppState) -> u16 {
 fn render_sidebar_collapsed(app: &AppState, frame: &mut Frame, area: Rect) {
     let is_navigating = matches!(
         app.mode,
-        Mode::Navigate | Mode::RenameSession | Mode::Resize | Mode::ConfirmClose | Mode::ContextMenu
+        Mode::Navigate
+            | Mode::RenameSession
+            | Mode::Resize
+            | Mode::ConfirmClose
+            | Mode::ContextMenu
     );
 
     let sep_style = if is_navigating {
@@ -208,7 +214,14 @@ fn render_sidebar_collapsed(app: &AppState, frame: &mut Frame, area: Rect) {
             Paragraph::new(Line::from(vec![
                 Span::styled(format!("{}", i + 1), num_style),
                 Span::styled(" ", row_style),
-                Span::styled(icon, if is_selected { icon_style.bg(app.accent) } else { icon_style }),
+                Span::styled(
+                    icon,
+                    if is_selected {
+                        icon_style.bg(app.accent)
+                    } else {
+                        icon_style
+                    },
+                ),
             ])),
             Rect::new(area.x, y, content_w, 1),
         );
@@ -220,7 +233,11 @@ fn render_sidebar_collapsed(app: &AppState, frame: &mut Frame, area: Rect) {
 fn render_sidebar(app: &AppState, frame: &mut Frame, area: Rect) {
     let is_navigating = matches!(
         app.mode,
-        Mode::Navigate | Mode::RenameSession | Mode::Resize | Mode::ConfirmClose | Mode::ContextMenu
+        Mode::Navigate
+            | Mode::RenameSession
+            | Mode::Resize
+            | Mode::ConfirmClose
+            | Mode::ContextMenu
     );
     let highlight = Style::default().bg(app.accent).fg(Color::Black);
     let sep_style = if is_navigating {
@@ -249,7 +266,11 @@ fn render_sidebar(app: &AppState, frame: &mut Frame, area: Rect) {
         let marker = if Some(i) == app.active { "▸" } else { " " };
         let (agg_state, agg_seen) = ws.aggregate_state();
         let (icon, icon_style) = state_icon_style(agg_state, agg_seen);
-        let text_style = if selected { highlight } else { Style::default() };
+        let text_style = if selected {
+            highlight
+        } else {
+            Style::default()
+        };
         let dim_style = if selected {
             highlight
         } else {
@@ -257,24 +278,30 @@ fn render_sidebar(app: &AppState, frame: &mut Frame, area: Rect) {
         };
         let mut line1 = vec![
             Span::styled(marker, text_style),
-            Span::styled(
-                ws.display_name(),
-                text_style.add_modifier(Modifier::BOLD),
-            ),
+            Span::styled(format!("{} ", i + 1), dim_style),
+            Span::styled(ws.display_name(), text_style.add_modifier(Modifier::BOLD)),
             Span::styled("  ", dim_style),
         ];
 
         if ws.layout.pane_count() == 1 {
             line1.push(Span::styled(
                 icon,
-                if selected { icon_style.bg(app.accent) } else { icon_style },
+                if selected {
+                    icon_style.bg(app.accent)
+                } else {
+                    icon_style
+                },
             ));
         } else {
             for (pane_state, pane_seen) in ws.pane_states() {
                 let (pane_icon, pane_style) = state_icon_style(pane_state, pane_seen);
                 line1.push(Span::styled(
                     pane_icon,
-                    if selected { pane_style.bg(app.accent) } else { pane_style },
+                    if selected {
+                        pane_style.bg(app.accent)
+                    } else {
+                        pane_style
+                    },
                 ));
             }
         }
@@ -288,7 +315,10 @@ fn render_sidebar(app: &AppState, frame: &mut Frame, area: Rect) {
             }
         }
 
-        frame.render_widget(Paragraph::new(Line::from(line1)), Rect::new(content.x, row_y, content.width, 1));
+        frame.render_widget(
+            Paragraph::new(Line::from(line1)),
+            Rect::new(content.x, row_y, content.width, 1),
+        );
 
         if app.mode == Mode::RenameSession && i == app.selected {
             let text = format!("  {}\u{2588}", app.name_input);
